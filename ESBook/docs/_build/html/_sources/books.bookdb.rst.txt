@@ -1,0 +1,30 @@
+books.bookdb package
+====================
+
+Submodules
+----------
+
+books.bookdb.bookspiced module
+------------------------------
+
+.. automodule:: books.bookdb.bookspiced
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+books.bookdb.mgDB module
+------------------------
+
+.. automodule:: books.bookdb.mgDB
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: books.bookdb
+    :members:
+    :undoc-members:
+    :show-inheritance:

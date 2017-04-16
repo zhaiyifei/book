@@ -1,0 +1,345 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh_CN">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>books.callblack.bookdetailCallblack &#8212; ceshi 1.0 文档</title>
+    
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/translations.js"></script>
+    <link rel="index" title="索引" href="../../../genindex.html" />
+    <link rel="search" title="搜索" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>books.callblack.bookdetailCallblack 源代码</h1><div class="highlight"><pre>
+<span></span><span class="c1">#coding=utf-8</span>
+<span class="sd">&quot;&quot;&quot;小说详情解析 模块&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">urlparse</span>
+<span class="kn">from</span> <span class="nn">bs4</span> <span class="k">import</span> <span class="n">BeautifulSoup</span>
+<span class="kn">import</span> <span class="nn">books.bookconfig</span> <span class="k">as</span> <span class="nn">book_config</span>
+<span class="kn">from</span> <span class="nn">books.util.bookDB</span> <span class="k">import</span> <span class="n">BookDB</span>
+<span class="kn">from</span> <span class="nn">books.util</span> <span class="k">import</span> <span class="n">downloaders</span>
+
+
+<div class="viewcode-block" id="BookDetailCallblack"><a class="viewcode-back" href="../../../books.callblack.html#books.callblack.bookdetailCallblack.BookDetailCallblack">[文档]</a><span class="k">class</span> <span class="nc">BookDetailCallblack</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;小说详情解析类</span>
+<span class="sd">        解析小说详情页中：</span>
+<span class="sd">            小说标签（玄幻，言情之类），小说标题，作者，最后更新时间，小说简介，小说章节url</span>
+<span class="sd">        保存到数据库 格式：</span>
+<span class="sd">            小说url，标题，作者，简介，更新时间，封面url，章节url</span>
+<span class="sd">        封面图片</span>
+<span class="sd">            封面图片保存到磁盘文档</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;初始化相关参数</span>
+<span class="sd">            正则表达式 &#39;&gt;(.*?)&gt;&#39; 匹配小说标签&quot;&quot;&quot;</span>
+        <span class="c1">#匹配小说标签</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">math</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;&gt;(.*?)&gt;&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_url</span> <span class="o">=</span> <span class="s1">&#39;http://www.biquge.com/&#39;</span>
+        <span class="c1">#isBinary = True 下载二进制类型文件</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">down</span> <span class="o">=</span> <span class="n">downloaders</span><span class="o">.</span><span class="n">Downloader</span><span class="p">(</span><span class="n">headers</span><span class="o">=</span><span class="p">{},</span><span class="n">isBinary</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">console_logger</span> <span class="o">=</span> <span class="n">book_config</span><span class="o">.</span><span class="n">CONSOLE_LOGGER</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_logger</span> <span class="o">=</span> <span class="n">book_config</span><span class="o">.</span><span class="n">ERROR_LOGGER</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">book_db</span> <span class="o">=</span> <span class="n">BookDB</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">url</span><span class="p">,</span><span class="n">html</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;回调方法 回调函数 方法解析html，并将解析内容保存到数据库</span>
+<span class="sd">            :param  url 小说详情页url,用于跟踪url对应的页面</span>
+<span class="sd">            :param  html 小说详情页html</span>
+<span class="sd">            :raise html页面不存在，则抛出 ValueError异常</span>
+<span class="sd">            :return  小说详情页中的小说章节url list类型 &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">html</span><span class="p">:</span>
+            <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">html</span><span class="p">,</span><span class="s1">&#39;lxml&#39;</span><span class="p">)</span>
+            <span class="n">book_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_book_id</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="n">book_tag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_book_tag</span><span class="p">(</span><span class="n">soup</span><span class="p">)</span>
+            <span class="n">book_title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_book_title</span><span class="p">(</span><span class="n">soup</span><span class="p">)</span>
+            <span class="n">book_author</span><span class="p">,</span><span class="n">update_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_book_author_update_time</span><span class="p">(</span><span class="n">soup</span><span class="p">)</span>
+            <span class="n">book_summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_book_summary</span><span class="p">(</span><span class="n">soup</span><span class="p">)</span>
+            <span class="n">book_chapters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_chapter_links</span><span class="p">(</span><span class="n">soup</span><span class="p">)</span>
+            <span class="n">book_img_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_book_img</span><span class="p">(</span><span class="n">soup</span><span class="p">,</span><span class="n">book_id</span><span class="p">)</span>
+            <span class="n">book_info</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;book_id&#39;</span><span class="p">:</span><span class="n">book_id</span><span class="p">,</span>
+                <span class="s1">&#39;book_tag&#39;</span><span class="p">:</span><span class="n">book_tag</span><span class="p">,</span>
+                <span class="s1">&#39;book_title&#39;</span><span class="p">:</span><span class="n">book_title</span><span class="p">,</span>
+                <span class="s1">&#39;book_author&#39;</span><span class="p">:</span><span class="n">book_author</span><span class="p">,</span>
+                <span class="s1">&#39;update_time&#39;</span><span class="p">:</span><span class="n">update_time</span><span class="p">,</span>
+                <span class="s1">&#39;book_summary&#39;</span><span class="p">:</span><span class="n">book_summary</span><span class="p">,</span>
+                <span class="s1">&#39;book_img_path&#39;</span><span class="p">:</span><span class="n">book_img_path</span>
+            <span class="p">}</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">save_book_details</span><span class="p">(</span><span class="n">book_info</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">book_chapters</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">u&#39;html 页面不存在 &#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BookDetailCallblack.get_book_id"><a class="viewcode-back" href="../../../books.callblack.html#books.callblack.bookdetailCallblack.BookDetailCallblack.get_book_id">[文档]</a>    <span class="k">def</span> <span class="nf">get_book_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;从url中解析出小说id</span>
+<span class="sd">                :param  url 小说详情页url</span>
+<span class="sd">                :return  小说id 字符串类型</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">book_id</span> <span class="o">=</span> <span class="n">urlparse</span><span class="o">.</span><span class="n">urlsplit</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">book_id</span></div>
+
+<div class="viewcode-block" id="BookDetailCallblack.save_img"><a class="viewcode-back" href="../../../books.callblack.html#books.callblack.bookdetailCallblack.BookDetailCallblack.save_img">[文档]</a>    <span class="k">def</span> <span class="nf">save_img</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">img_url</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">file_path</span><span class="o">=</span><span class="s1">r&#39;ESBook\data\img&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;保存图片到磁盘文件夹</span>
+<span class="sd">            :param  img_url 图片url地址</span>
+<span class="sd">            :param  file_name 图片名称</span>
+<span class="sd">            :raise  产生IOError异常 则抛出  ValueError异常</span>
+<span class="sd">            :return  返回保存到磁盘文件的图片的绝对路径</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">base_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;ESBook&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">file_path</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">base_path</span><span class="p">,</span> <span class="s1">r&#39;ESBook\data\img&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+                <span class="c1">#print &#39;文件夹&#39;, file_path, &#39;不存在，重新建立&#39;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">console_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">u&#39;文件夹 &#39;</span> <span class="o">+</span> <span class="n">file_path</span> <span class="o">+</span> <span class="s1">u&#39; 不存在，重新建立&#39;</span><span class="p">)</span>
+                <span class="c1"># os.mkdir(file_path)</span>
+                <span class="c1"># 使用makedirs而不是使用mkdir 是因为 mkdir只能建立单级文件目录</span>
+                <span class="c1"># makedirs可以建立多级文件目录,也可以建立单级文件目录</span>
+                <span class="c1"># 单级文件目录：img</span>
+                <span class="c1"># 多级文件目录：my/img</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+
+            <span class="n">file_suffix</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">img_url</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}{}{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">file_suffix</span><span class="p">)</span>
+            <span class="n">context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">down</span><span class="p">(</span><span class="n">img_url</span><span class="p">)</span>
+            <span class="c1">#这个地方一定要用a+的文件打开方式，不然多进程的情况下回导致图片写入文件不完整。</span>
+            <span class="c1">#因为图片是二进制数据，所以要选择ab模式</span>
+            <span class="c1">#以a+方式open一个文件的时候，write文件是个原子操作，多进程之间不会出现交叉写的情况，</span>
+            <span class="c1">#  并且write大小没有限制的，不受4k大小限制。</span>
+            <span class="c1">#  write一个文件内核是加锁的，会保证原子执行。</span>
+
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s1">&#39;ab+&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">filename</span>
+        <span class="k">except</span> <span class="ne">IOError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1">#print &#39;文件操作失败&#39;, e</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">u&#39;文件操作失败 &#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BookDetailCallblack.get_book_img"><a class="viewcode-back" href="../../../books.callblack.html#books.callblack.bookdetailCallblack.BookDetailCallblack.get_book_img">[文档]</a>    <span class="k">def</span> <span class="nf">get_book_img</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">soup</span><span class="p">,</span><span class="n">book_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;下载小说封面，保存到本地文件夹，小说封面名称为小说id名称,并返回当前小说封面文件路径</span>
+<span class="sd">            :param  soup  BeautifulSoup对象</span>
+<span class="sd">            :param  book_id 小说id</span>
+<span class="sd">            :raise  ValueError 小说封面不存在则抛出ValueError异常</span>
+<span class="sd">            :return  小说封面磁盘文件路径</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">img_div</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;div#fmimg &gt; img&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">img_div</span><span class="p">:</span>
+            <span class="n">img_src</span> <span class="o">=</span> <span class="n">urlparse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_url</span><span class="p">,</span><span class="n">img_div</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;src&#39;</span><span class="p">])</span>
+            <span class="n">img_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_img</span><span class="p">(</span><span class="n">img_src</span><span class="p">,</span><span class="n">book_id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">img_path</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1">#print &#39;小说封面不存在&#39;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">u&#39;小说封面不存在 &#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BookDetailCallblack.get_book_tag"><a class="viewcode-back" href="../../../books.callblack.html#books.callblack.bookdetailCallblack.BookDetailCallblack.get_book_tag">[文档]</a>    <span class="k">def</span> <span class="nf">get_book_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">soup</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;获得小说标签，玄幻，武侠之类的</span>
+<span class="sd">            :param  soup  BeautifulSoup对象</span>
+<span class="sd">            :raise  ValueError 小说标签不存在或者解析异常，则抛出ValueError异常</span>
+<span class="sd">            :return  小说标签，失败则返回None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">book_tag_div</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;div.con_top&#39;</span><span class="p">)</span>
+        <span class="n">book_tag</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">book_tag_div</span><span class="p">:</span>
+            <span class="n">tag_string</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">book_tag_div</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stripped_strings</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">math</span><span class="p">,</span> <span class="n">tag_string</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">info</span><span class="p">:</span>
+                <span class="n">book_tag</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1">#print &#39;小说标签解析失败---:&#39;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">u&#39;小说标签解析失败 &#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1">#print &#39;小说标签获取失败----&#39;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">u&#39;小说标签不存在 &#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">book_tag</span></div>
+
+<div class="viewcode-block" id="BookDetailCallblack.get_book_title"><a class="viewcode-back" href="../../../books.callblack.html#books.callblack.bookdetailCallblack.BookDetailCallblack.get_book_title">[文档]</a>    <span class="k">def</span> <span class="nf">get_book_title</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">soup</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;获得小说标题</span>
+<span class="sd">            :param  soup  BeautifulSoup对象</span>
+<span class="sd">            :raise   ValueError 小说标题不存在或者解析异常，则抛出ValueError异常</span>
+<span class="sd">            :return  小说标题 失败则返回None&quot;&quot;&quot;</span>
+
+        <span class="n">book_title_div</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;div#info &gt; h1&#39;</span><span class="p">)</span>
+        <span class="n">book_title</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">book_title_div</span><span class="p">:</span>
+            <span class="c1"># 使用get_text 返回 unicode 对象</span>
+            <span class="c1"># .string 返回的是 NavigableString对象，保存到数据库时候 需要再次转换为python字符串才行。</span>
+            <span class="n">book_title</span> <span class="o">=</span> <span class="n">book_title_div</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">u&#39;小说标题不存在 &#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">book_title</span></div>
+
+<div class="viewcode-block" id="BookDetailCallblack.get_book_author_update_time"><a class="viewcode-back" href="../../../books.callblack.html#books.callblack.bookdetailCallblack.BookDetailCallblack.get_book_author_update_time">[文档]</a>    <span class="k">def</span> <span class="nf">get_book_author_update_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">soup</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;获得小说作者和更新时间</span>
+<span class="sd">            :param  soup  BeautifulSoup对象</span>
+<span class="sd">            :raise  ValueError 小说作者和更新时间不存在或者解析异常，则抛出ValueError异常</span>
+<span class="sd">            :return 小说作者，更新时间，元组类型。失败则返回（None,None)</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+        <span class="n">info_div</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;div#info &gt; p&#39;</span><span class="p">)</span>
+        <span class="n">author</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">update_time</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">info_div</span><span class="p">:</span>
+            <span class="n">author</span> <span class="o">=</span> <span class="n">info_div</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">string</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;：&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">update_time</span> <span class="o">=</span> <span class="n">info_div</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">string</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;：&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1">#print &#39;作者，更新时间 不存在&#39;</span>
+            <span class="c1"># 如果获取的内容不存在，则说明网页获取不正确，pass掉，不在对当前页进行解析，记录url，异常信息，进行下一个页面的获取</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">u&#39;小说 作者，更新时间 不存在 &#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">author</span><span class="p">,</span> <span class="n">update_time</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BookDetailCallblack.get_book_summary"><a class="viewcode-back" href="../../../books.callblack.html#books.callblack.bookdetailCallblack.BookDetailCallblack.get_book_summary">[文档]</a>    <span class="k">def</span> <span class="nf">get_book_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">soup</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;获得小说简介</span>
+<span class="sd">            :param  soup  BeautifulSoup对象</span>
+<span class="sd">            :raise  ValueError 小说简介不存在或者解析异常，则抛出ValueError异常</span>
+<span class="sd">            :return  小说简介，失败则返回None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">summary_div</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;div#intro&#39;</span><span class="p">)</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">summary_div</span><span class="p">:</span>
+            <span class="n">summary</span> <span class="o">=</span> <span class="n">summary_div</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1">#print &#39;小说简介不存在&#39;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">u&#39;小说简介不存在 &#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">summary</span></div>
+
+<div class="viewcode-block" id="BookDetailCallblack.get_chapter_links"><a class="viewcode-back" href="../../../books.callblack.html#books.callblack.bookdetailCallblack.BookDetailCallblack.get_chapter_links">[文档]</a>    <span class="k">def</span> <span class="nf">get_chapter_links</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">soup</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;获得小说章节url</span>
+<span class="sd">            :param  soup  BeautifulSoup对象</span>
+<span class="sd">            :raise  ValueError 小说章节url不存在或者解析异常，则抛出ValueError异常</span>
+<span class="sd">            :return  返回小说章节url list类型，失败则返回None&quot;&quot;&quot;</span>
+
+        <span class="n">book_chapter_div</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;div#list dd &gt; a&#39;</span><span class="p">)</span>
+        <span class="n">book_chapters</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">book_chapter_div</span><span class="p">:</span>
+            <span class="c1"># 必须将set对象转换为list对象，MongoDB无法储存set对象。</span>
+            <span class="n">book_chapter_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">urlparse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_url</span><span class="p">,</span> <span class="n">a</span><span class="p">[</span><span class="s1">&#39;href&#39;</span><span class="p">])</span>
+                                 <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">book_chapter_div</span><span class="p">]</span>
+            <span class="n">book_chapters</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">book_chapter_list</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">u&#39;小说 章节url不存在 &#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">book_chapters</span></div>
+
+<div class="viewcode-block" id="BookDetailCallblack.save_book_details"><a class="viewcode-back" href="../../../books.callblack.html#books.callblack.bookdetailCallblack.BookDetailCallblack.save_book_details">[文档]</a>    <span class="k">def</span> <span class="nf">save_book_details</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">book_info</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;保存小说信息到数据库</span>
+<span class="sd">            :param  小说详情信息&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">book_db</span><span class="o">.</span><span class="n">insert_book</span><span class="p">(</span><span class="n">book_info</span><span class="p">)</span></div></div>
+
+
+
+
+
+
+<span class="c1"># def kaishi():</span>
+<span class="c1">#     file_path = &#39;I:&#39; + os.sep + &#39;myimg&#39;</span>
+<span class="c1">#     img_url = &#39;http://upload.jianshu.io/admin_banners/web_images/2474/259a36ccbca577c3064c68ab3c0f1834d77456d7.png&#39;</span>
+<span class="c1">#     save_img(img_url, &#39;jianshu&#39;, file_path=file_path)</span>
+<span class="c1"># if __name__ == &#39;__main__&#39;:</span>
+<span class="c1">#     # import downloaders</span>
+<span class="c1">#     #</span>
+<span class="c1">#     # book_url = &#39;http://www.biquge.com/43_43821/&#39;</span>
+<span class="c1">#     # D = downloaders.Downloader(headers={})</span>
+<span class="c1">#     # bookdetail = BookDetailCallblack()</span>
+<span class="c1">#     # html = D(book_url)</span>
+<span class="c1">#     # bookdetail(book_url,html)</span>
+<span class="c1">#     img_url = &#39;http://upload.jianshu.io/admin_banners/web_images/2474/259a36ccbca577c3064c68ab3c0f1834d77456d7.png&#39;</span>
+<span class="c1">#     base_path = os.getcwd().split(&#39;ESBook&#39;)[0]</span>
+<span class="c1">#     file_path = &#39;&#39;.join([base_path, r&#39;ESBook\data\img&#39;])</span>
+<span class="c1">#     print &#39;file_path &#39;,file_path</span>
+<span class="c1">#     if not os.path.exists(file_path):</span>
+<span class="c1">#         # print &#39;文件夹&#39;, file_path, &#39;不存在，重新建立&#39;</span>
+<span class="c1">#         # os.mkdir(file_path)</span>
+<span class="c1">#         # 使用makedirs而不是使用mkdir 是因为 mkdir只能建立单级文件目录</span>
+<span class="c1">#         # makedirs可以建立多级文件目录,也可以建立单级文件目录</span>
+<span class="c1">#         # 单级文件目录：img</span>
+<span class="c1">#         # 多级文件目录：my/img</span>
+<span class="c1">#         print &#39;创建文件夹 &#39;,file_path</span>
+<span class="c1">#         os.makedirs(file_path)</span>
+<span class="c1">#     # 当前文件夹的绝对路径</span>
+<span class="c1">#     abs_path = os.path.realpath(file_path)</span>
+<span class="c1">#     print &#39;绝对路径&#39;,abs_path</span>
+<span class="c1">#     file_name = &#39;我的图片&#39;</span>
+<span class="c1">#     file_suffix = os.path.splitext(img_url)[1]</span>
+<span class="c1">#     filename = &#39;{}{}{}{}&#39;.format(file_path, os.sep, file_name, file_suffix)</span>
+<span class="c1">#     print filename</span>
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">模块代码</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>快速搜索</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="转向" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, zhai.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,7 @@
+ERROR - errorlogger - 2017-04-06 13:35:08 - link_crawler.book_detail_crwler - 出现错误跳过当前url http://www.biquge.com/21_21452/ 信息为：小说标签不存在  
+ERROR - errorlogger - 2017-04-06 13:35:48 - link_crawler.book_detail_crwler - 出现错误跳过当前url http://www.biquge.com/44_44706/ 信息为：html 页面不存在  
+ERROR - errorlogger - 2017-04-06 13:36:37 - link_crawler.book_detail_crwler - 出现错误跳过当前url http://www.biquge.com/4_4097/ 信息为：html 页面不存在  
+ERROR - errorlogger - 2017-04-06 13:38:14 - link_crawler.book_detail_crwler - 出现错误跳过当前url http://www.biquge.com/44_44716/ 信息为：小说标签不存在  
+ERROR - errorlogger - 2017-04-06 13:41:36 - link_crawler.book_detail_crwler - 出现错误跳过当前url http://www.biquge.com/18_18716/ 信息为：小说标签不存在  
+ERROR - errorlogger - 2017-04-06 13:43:31 - link_crawler.book_detail_crwler - 出现错误跳过当前url http://www.biquge.com/0_244/ 信息为：html 页面不存在  
+ERROR - errorlogger - 2017-04-06 13:46:32 - downloaders.download - 超时异常  下载 : http://www.biquge.com/files/article/image/24/23817/23817.jpg 失败

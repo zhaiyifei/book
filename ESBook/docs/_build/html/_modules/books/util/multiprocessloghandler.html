@@ -1,0 +1,242 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh_CN">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>books.util.multiprocessloghandler &#8212; ceshi 1.0 文档</title>
+    
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/translations.js"></script>
+    <link rel="index" title="索引" href="../../../genindex.html" />
+    <link rel="search" title="搜索" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>books.util.multiprocessloghandler 源代码</h1><div class="highlight"><pre>
+<span></span><span class="c1">#coding=utf-8</span>
+<span class="sd">&quot;&quot;&quot;多进程版TimedRotatingFileHandler模块&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">codecs</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">codecs</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="MultiprocessHandler"><a class="viewcode-back" href="../../../books.util.html#books.util.multiprocessloghandler.MultiprocessHandler">[文档]</a><span class="k">class</span> <span class="nc">MultiprocessHandler</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;MultiprocessHandler类 支持多进程的TimedRotatingFileHandler&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span><span class="n">when</span><span class="o">=</span><span class="s1">&#39;D&#39;</span><span class="p">,</span><span class="n">backupCount</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">encoding</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">delay</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;初始化Handler，如果logs文件夹不存在，则创建</span>
+<span class="sd">        :param filename 日志文件名</span>
+<span class="sd">        :param when 时间间隔的单位</span>
+<span class="sd">        :param backupCount 保留文件个数</span>
+<span class="sd">        :param encoding 日志文件编码</span>
+<span class="sd">        :param delay 是否开启 OutSteam缓存</span>
+<span class="sd">            True 表示开启缓存，OutStream输出到缓存，待缓存区满后，刷新缓存区，并输出缓存数据到文件。</span>
+<span class="sd">            False表示不缓存，OutStrea直接输出到文件&quot;&quot;&quot;</span>
+        <span class="c1">#日志文件名</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">=</span> <span class="n">filename</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backupCount</span> <span class="o">=</span> <span class="n">backupCount</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">when</span> <span class="o">=</span> <span class="n">when</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="c1"># 正则匹配 年-月-日</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extMath</span> <span class="o">=</span> <span class="s2">r&quot;^\d</span><span class="si">{4}</span><span class="s2">-\d</span><span class="si">{2}</span><span class="s2">-\d</span><span class="si">{2}</span><span class="s2">&quot;</span>
+
+        <span class="c1"># S 每秒建立一个新文件</span>
+        <span class="c1"># M 每分钟建立一个新文件</span>
+        <span class="c1"># H 每天建立一个新文件</span>
+        <span class="c1"># D 每天建立一个新文件</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">when_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;S&#39;</span><span class="p">:</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">-%H-%M-%S&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;M&#39;</span><span class="p">:</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">-%H-%M&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;H&#39;</span><span class="p">:</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">-%H&quot;</span><span class="p">,</span>
+            <span class="s1">&#39;D&#39;</span><span class="p">:</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span>
+        <span class="p">}</span>
+        <span class="c1">#日志文件日期后缀</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">suffix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">when_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">when</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">u&quot;指定的日期间隔单位无效: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">when</span><span class="p">)</span>
+        <span class="c1">#拼接文件路径 格式化字符串</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filefmt</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;logs&quot;</span><span class="p">,</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="p">))</span>
+        <span class="c1">#使用当前时间，格式化文件格式化字符串</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filePath</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filefmt</span><span class="p">)</span>
+        <span class="c1">#获得文件夹路径</span>
+        <span class="n">_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filefmt</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1">#如果日志文件夹不存在，则创建文件夹</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">_dir</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">_dir</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="nb">print</span> <span class="s2">u&quot;创建文件夹失败&quot;</span>
+            <span class="nb">print</span> <span class="s2">u&quot;文件夹路径：&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">filePath</span>
+            <span class="k">pass</span>
+
+        <span class="k">if</span> <span class="n">codecs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">encoding</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">filePath</span><span class="p">,</span><span class="s1">&#39;a+&#39;</span><span class="p">,</span><span class="n">encoding</span><span class="p">,</span><span class="n">delay</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MultiprocessHandler.shouldChangeFileToWrite"><a class="viewcode-back" href="../../../books.util.html#books.util.multiprocessloghandler.MultiprocessHandler.shouldChangeFileToWrite">[文档]</a>    <span class="k">def</span> <span class="nf">shouldChangeFileToWrite</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;更改日志写入目的文件</span>
+<span class="sd">        :return True 表示已更改，False 表示未更改&quot;&quot;&quot;</span>
+
+        <span class="c1">#以当前时间获得新日志文件路径</span>
+        <span class="n">_filePath</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filefmt</span><span class="p">)</span>
+        <span class="c1">#新日志文件日期 不等于 旧日志文件日期，则表示 已经到了日志切分的时候</span>
+        <span class="c1">#   更换日志写入目的为新日志文件。</span>
+        <span class="c1">#例如 按 天 （D）来切分日志</span>
+        <span class="c1">#   当前新日志日期等于旧日志日期，则表示在同一天内，还不到日志切分的时候</span>
+        <span class="c1">#   当前新日志日期不等于旧日志日期，则表示不在</span>
+        <span class="c1">#同一天内，进行日志切分，将日志内容写入新日志内。</span>
+        <span class="k">if</span> <span class="n">_filePath</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filePath</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filePath</span> <span class="o">=</span> <span class="n">_filePath</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="MultiprocessHandler.doChangeFile"><a class="viewcode-back" href="../../../books.util.html#books.util.multiprocessloghandler.MultiprocessHandler.doChangeFile">[文档]</a>    <span class="k">def</span> <span class="nf">doChangeFile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;输出信息到日志文件，并删除多于保留个数的所有日志文件&quot;&quot;&quot;</span>
+
+        <span class="c1">#日志文件的绝对路径</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">baseFilename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filePath</span><span class="p">)</span>
+        <span class="c1">#stream == OutStream</span>
+        <span class="c1">#stream is not None 表示 OutStream中还有未输出完的缓存数据</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="p">:</span>
+            <span class="c1">#flush close 都会刷新缓冲区，flush不会关闭stream，close则关闭stream</span>
+            <span class="c1">#self.stream.flush()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="c1">#关闭stream后必须重新设置stream为None，否则会造成对已关闭文件进行IO操作。</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1">#delay 为False 表示 不OutStream不缓存数据 直接输出</span>
+        <span class="c1">#   所有，只需要关闭OutStream即可</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="p">:</span>
+            <span class="c1">#这个地方如果关闭colse那么就会造成进程往已关闭的文件中写数据，从而造成IO错误</span>
+            <span class="c1">#delay == False 表示的就是 不缓存直接写入磁盘</span>
+            <span class="c1">#我们需要重新在打开一次stream</span>
+            <span class="c1">#self.stream.close()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_open</span><span class="p">()</span>
+        <span class="c1">#删除多于保留个数的所有日志文件</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">backupCount</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span> <span class="s1">&#39;删除日志&#39;</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">getFilesToDelete</span><span class="p">():</span>
+                <span class="nb">print</span> <span class="n">s</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">s</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MultiprocessHandler.getFilesToDelete"><a class="viewcode-back" href="../../../books.util.html#books.util.multiprocessloghandler.MultiprocessHandler.getFilesToDelete">[文档]</a>    <span class="k">def</span> <span class="nf">getFilesToDelete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;获得过期需要删除的日志文件</span>
+<span class="sd">            :return 待删除的日志文件&quot;&quot;&quot;</span>
+
+        <span class="c1">#分离出日志文件夹绝对路径</span>
+        <span class="c1">#split返回一个元组（absFilePath,fileName)</span>
+        <span class="c1">#例如：split(&#39;I:\ScripPython\char4\mybook\util\logs\mylog.2017-03-19）</span>
+        <span class="c1">#返回（I:\ScripPython\char4\mybook\util\logs， mylog.2017-03-19）</span>
+        <span class="c1"># _ 表示占位符，没什么实际意义，</span>
+        <span class="n">dirName</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">baseFilename</span><span class="p">)</span>
+        <span class="n">fileNames</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">dirName</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1">#self.prefix 为日志文件名 列如：mylog.2017-03-19 中的 mylog</span>
+        <span class="c1">#加上 点号 . 方便获取点号后面的日期</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span>
+        <span class="n">plen</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">fileName</span> <span class="ow">in</span> <span class="n">fileNames</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">fileName</span><span class="p">[:</span><span class="n">plen</span><span class="p">]</span> <span class="o">==</span> <span class="n">prefix</span><span class="p">:</span>
+                <span class="c1">#日期后缀 mylog.2017-03-19 中的 2017-03-19</span>
+                <span class="n">suffix</span> <span class="o">=</span> <span class="n">fileName</span><span class="p">[</span><span class="n">plen</span><span class="p">:]</span>
+                <span class="c1">#匹配符合规则的日志文件，添加到result列表中</span>
+                <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extMath</span><span class="p">)</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">suffix</span><span class="p">):</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirName</span><span class="p">,</span><span class="n">fileName</span><span class="p">))</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+        <span class="c1">#返回  待删除的日志文件</span>
+        <span class="c1">#   多于 保留文件个数 backupCount的所有前面的日志文件。</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">backupCount</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">backupCount</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="MultiprocessHandler.emit"><a class="viewcode-back" href="../../../books.util.html#books.util.multiprocessloghandler.MultiprocessHandler.emit">[文档]</a>    <span class="k">def</span> <span class="nf">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;发送一个日志记录。覆盖FileHandler中的emit方法，logging会自动调用此方法</span>
+<span class="sd">            :param record 日志记录&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shouldChangeFileToWrite</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">doChangeFile</span><span class="p">()</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">record</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">KeyboardInterrupt</span><span class="p">,</span><span class="ne">SystemExit</span><span class="p">):</span>
+            <span class="k">raise</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">handleError</span><span class="p">(</span><span class="n">record</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">模块代码</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>快速搜索</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="转向" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, zhai.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

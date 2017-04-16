@@ -1,0 +1,2 @@
+ERROR - errorlogger - 2017-04-06 13:29:30 - link_crawler.book_detail_crwler - 出现错误跳过当前url http://www.biquge.com/0_267/ 信息为：小说标签不存在  
+ERROR - errorlogger - 2017-04-06 13:29:36 - link_crawler.book_detail_crwler - 出现错误跳过当前url http://www.biquge.com/34_34092/ 信息为：小说标签不存在  

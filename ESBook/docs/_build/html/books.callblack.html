@@ -1,0 +1,242 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh_CN">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>books.callblack package &#8212; ceshi 1.0 文档</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="index" title="索引" href="genindex.html" />
+    <link rel="search" title="搜索" href="search.html" />
+    <link rel="prev" title="books.util package" href="books.util.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="books-callblack-package">
+<h1>books.callblack package<a class="headerlink" href="#books-callblack-package" title="永久链接至标题">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="永久链接至标题">¶</a></h2>
+</div>
+<div class="section" id="module-books.callblack.bookcallblack">
+<span id="books-callblack-bookcallblack-module"></span><h2>books.callblack.bookcallblack module<a class="headerlink" href="#module-books.callblack.bookcallblack" title="永久链接至标题">¶</a></h2>
+<p>book回调模块，处理具体逻辑</p>
+<dl class="class">
+<dt id="books.callblack.bookcallblack.BookSpiderCallblack">
+<em class="property">class </em><code class="descclassname">books.callblack.bookcallblack.</code><code class="descname">BookSpiderCallblack</code><a class="reference internal" href="_modules/books/callblack/bookcallblack.html#BookSpiderCallblack"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.callblack.bookcallblack.BookSpiderCallblack" title="永久链接至目标">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>对小说主页中的所有小说url进行爬取</p>
+<dl class="method">
+<dt id="books.callblack.bookcallblack.BookSpiderCallblack.get_book_links">
+<code class="descname">get_book_links</code><span class="sig-paren">(</span><em>url</em>, <em>html</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/books/callblack/bookcallblack.html#BookSpiderCallblack.get_book_links"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.callblack.bookcallblack.BookSpiderCallblack.get_book_links" title="永久链接至目标">¶</a></dt>
+<dd><p>解析小说主页并获得主页中所有小说url
+:param  url 小说主页url,用于跟踪url对应的页面
+:param  html 小说主页html
+:raise  html页面解析失败则抛出 ValueError
+:return  小说主页中的所有小说url set集合</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-books.callblack.bookdetailCallblack">
+<span id="books-callblack-bookdetailcallblack-module"></span><h2>books.callblack.bookdetailCallblack module<a class="headerlink" href="#module-books.callblack.bookdetailCallblack" title="永久链接至标题">¶</a></h2>
+<p>小说详情解析 模块</p>
+<dl class="class">
+<dt id="books.callblack.bookdetailCallblack.BookDetailCallblack">
+<em class="property">class </em><code class="descclassname">books.callblack.bookdetailCallblack.</code><code class="descname">BookDetailCallblack</code><a class="reference internal" href="_modules/books/callblack/bookdetailCallblack.html#BookDetailCallblack"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.callblack.bookdetailCallblack.BookDetailCallblack" title="永久链接至目标">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>小说详情解析类
+解析小说详情页中：</p>
+<blockquote>
+<div>小说标签（玄幻，言情之类），小说标题，作者，最后更新时间，小说简介，小说章节url</div></blockquote>
+<dl class="docutils">
+<dt>保存到数据库 格式：</dt>
+<dd>小说url，标题，作者，简介，更新时间，封面url，章节url</dd>
+<dt>封面图片</dt>
+<dd>封面图片保存到磁盘文档</dd>
+</dl>
+<dl class="method">
+<dt id="books.callblack.bookdetailCallblack.BookDetailCallblack.get_book_author_update_time">
+<code class="descname">get_book_author_update_time</code><span class="sig-paren">(</span><em>soup</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/books/callblack/bookdetailCallblack.html#BookDetailCallblack.get_book_author_update_time"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.callblack.bookdetailCallblack.BookDetailCallblack.get_book_author_update_time" title="永久链接至目标">¶</a></dt>
+<dd><p>获得小说作者和更新时间
+:param  soup  BeautifulSoup对象
+:raise  ValueError 小说作者和更新时间不存在或者解析异常，则抛出ValueError异常
+:return 小说作者，更新时间，元组类型。失败则返回（None,None)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="books.callblack.bookdetailCallblack.BookDetailCallblack.get_book_id">
+<code class="descname">get_book_id</code><span class="sig-paren">(</span><em>url</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/books/callblack/bookdetailCallblack.html#BookDetailCallblack.get_book_id"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.callblack.bookdetailCallblack.BookDetailCallblack.get_book_id" title="永久链接至目标">¶</a></dt>
+<dd><p>从url中解析出小说id
+:param  url 小说详情页url
+:return  小说id 字符串类型</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="books.callblack.bookdetailCallblack.BookDetailCallblack.get_book_img">
+<code class="descname">get_book_img</code><span class="sig-paren">(</span><em>soup</em>, <em>book_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/books/callblack/bookdetailCallblack.html#BookDetailCallblack.get_book_img"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.callblack.bookdetailCallblack.BookDetailCallblack.get_book_img" title="永久链接至目标">¶</a></dt>
+<dd><p>下载小说封面，保存到本地文件夹，小说封面名称为小说id名称,并返回当前小说封面文件路径
+:param  soup  BeautifulSoup对象
+:param  book_id 小说id
+:raise  ValueError 小说封面不存在则抛出ValueError异常
+:return  小说封面磁盘文件路径</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="books.callblack.bookdetailCallblack.BookDetailCallblack.get_book_summary">
+<code class="descname">get_book_summary</code><span class="sig-paren">(</span><em>soup</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/books/callblack/bookdetailCallblack.html#BookDetailCallblack.get_book_summary"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.callblack.bookdetailCallblack.BookDetailCallblack.get_book_summary" title="永久链接至目标">¶</a></dt>
+<dd><p>获得小说简介
+:param  soup  BeautifulSoup对象
+:raise  ValueError 小说简介不存在或者解析异常，则抛出ValueError异常
+:return  小说简介，失败则返回None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="books.callblack.bookdetailCallblack.BookDetailCallblack.get_book_tag">
+<code class="descname">get_book_tag</code><span class="sig-paren">(</span><em>soup</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/books/callblack/bookdetailCallblack.html#BookDetailCallblack.get_book_tag"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.callblack.bookdetailCallblack.BookDetailCallblack.get_book_tag" title="永久链接至目标">¶</a></dt>
+<dd><p>获得小说标签，玄幻，武侠之类的
+:param  soup  BeautifulSoup对象
+:raise  ValueError 小说标签不存在或者解析异常，则抛出ValueError异常
+:return  小说标签，失败则返回None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="books.callblack.bookdetailCallblack.BookDetailCallblack.get_book_title">
+<code class="descname">get_book_title</code><span class="sig-paren">(</span><em>soup</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/books/callblack/bookdetailCallblack.html#BookDetailCallblack.get_book_title"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.callblack.bookdetailCallblack.BookDetailCallblack.get_book_title" title="永久链接至目标">¶</a></dt>
+<dd><p>获得小说标题
+:param  soup  BeautifulSoup对象
+:raise   ValueError 小说标题不存在或者解析异常，则抛出ValueError异常
+:return  小说标题 失败则返回None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="books.callblack.bookdetailCallblack.BookDetailCallblack.get_chapter_links">
+<code class="descname">get_chapter_links</code><span class="sig-paren">(</span><em>soup</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/books/callblack/bookdetailCallblack.html#BookDetailCallblack.get_chapter_links"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.callblack.bookdetailCallblack.BookDetailCallblack.get_chapter_links" title="永久链接至目标">¶</a></dt>
+<dd><p>获得小说章节url
+:param  soup  BeautifulSoup对象
+:raise  ValueError 小说章节url不存在或者解析异常，则抛出ValueError异常
+:return  返回小说章节url list类型，失败则返回None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="books.callblack.bookdetailCallblack.BookDetailCallblack.save_book_details">
+<code class="descname">save_book_details</code><span class="sig-paren">(</span><em>book_info</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/books/callblack/bookdetailCallblack.html#BookDetailCallblack.save_book_details"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.callblack.bookdetailCallblack.BookDetailCallblack.save_book_details" title="永久链接至目标">¶</a></dt>
+<dd><p>保存小说信息到数据库
+:param  小说详情信息</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="books.callblack.bookdetailCallblack.BookDetailCallblack.save_img">
+<code class="descname">save_img</code><span class="sig-paren">(</span><em>img_url</em>, <em>file_name</em>, <em>file_path='ESBook\\data\\img'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/books/callblack/bookdetailCallblack.html#BookDetailCallblack.save_img"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.callblack.bookdetailCallblack.BookDetailCallblack.save_img" title="永久链接至目标">¶</a></dt>
+<dd><p>保存图片到磁盘文件夹
+:param  img_url 图片url地址
+:param  file_name 图片名称
+:raise  产生IOError异常 则抛出  ValueError异常
+:return  返回保存到磁盘文件的图片的绝对路径</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-books.callblack">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-books.callblack" title="永久链接至标题">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">內容目录</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">books.callblack package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-books.callblack.bookcallblack">books.callblack.bookcallblack module</a></li>
+<li><a class="reference internal" href="#module-books.callblack.bookdetailCallblack">books.callblack.bookdetailCallblack module</a></li>
+<li><a class="reference internal" href="#module-books.callblack">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">ESBook</a><ul>
+  <li><a href="books.html">books package</a><ul>
+      <li>Previous: <a href="books.util.html" title="上一章">books.util package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>本页</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/books.callblack.rst.txt"
+            rel="nofollow">显示源代码</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>快速搜索</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="转向" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, zhai.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/books.callblack.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

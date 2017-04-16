@@ -1,0 +1,213 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh_CN">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>books.util package &#8212; ceshi 1.0 文档</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="index" title="索引" href="genindex.html" />
+    <link rel="search" title="搜索" href="search.html" />
+    <link rel="prev" title="books package" href="books.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="books-util-package">
+<h1>books.util package<a class="headerlink" href="#books-util-package" title="永久链接至标题">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="永久链接至标题">¶</a></h2>
+</div>
+<div class="section" id="module-books.util.bookDB">
+<span id="books-util-bookdb-module"></span><h2>books.util.bookDB module<a class="headerlink" href="#module-books.util.bookDB" title="永久链接至标题">¶</a></h2>
+<p>数据库操作模块</p>
+<dl class="class">
+<dt id="books.util.bookDB.BookDB">
+<em class="property">class </em><code class="descclassname">books.util.bookDB.</code><code class="descname">BookDB</code><a class="reference internal" href="_modules/books/util/bookDB.html#BookDB"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.util.bookDB.BookDB" title="永久链接至目标">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>BookDB类 对books_table和chapters_table的插入操作</p>
+<dl class="method">
+<dt id="books.util.bookDB.BookDB.insert_book">
+<code class="descname">insert_book</code><span class="sig-paren">(</span><em>book_info</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/books/util/bookDB.html#BookDB.insert_book"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.util.bookDB.BookDB.insert_book" title="永久链接至目标">¶</a></dt>
+<dd><p>插入小说详情内容到数据库
+:param book_info  待插入book信息文档</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="books.util.bookDB.BookDB.insert_chapter">
+<code class="descname">insert_chapter</code><span class="sig-paren">(</span><em>chapter_info</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/books/util/bookDB.html#BookDB.insert_chapter"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.util.bookDB.BookDB.insert_chapter" title="永久链接至目标">¶</a></dt>
+<dd><p>插入章节详情内容到数据库
+:param chapter_info  待插入章节信息文档</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-books.util.logger">
+<span id="books-util-logger-module"></span><h2>books.util.logger module<a class="headerlink" href="#module-books.util.logger" title="永久链接至标题">¶</a></h2>
+<p>日志模块 对logging的简单封装</p>
+<dl class="class">
+<dt id="books.util.logger.MyLogger">
+<em class="property">class </em><code class="descclassname">books.util.logger.</code><code class="descname">MyLogger</code><a class="reference internal" href="_modules/books/util/logger.html#MyLogger"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.util.logger.MyLogger" title="永久链接至目标">¶</a></dt>
+<dd><p>日志类 加载配置文件并获得logger</p>
+<dl class="staticmethod">
+<dt id="books.util.logger.MyLogger.getLogger">
+<em class="property">static </em><code class="descname">getLogger</code><span class="sig-paren">(</span><em>name=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/books/util/logger.html#MyLogger.getLogger"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.util.logger.MyLogger.getLogger" title="永久链接至目标">¶</a></dt>
+<dd><p>获得logger
+:param name  logger名称，默认获得root logger</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="books.util.logger.MyLogger.initLogConf">
+<em class="property">static </em><code class="descname">initLogConf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/books/util/logger.html#MyLogger.initLogConf"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.util.logger.MyLogger.initLogConf" title="永久链接至目标">¶</a></dt>
+<dd><p>从当前目录加载日志配置文件</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="books.util.logger.MyLogger.log_instance">
+<code class="descname">log_instance</code><em class="property"> = &lt;logging.Logger object&gt;</em><a class="headerlink" href="#books.util.logger.MyLogger.log_instance" title="永久链接至目标">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-books.util.multiprocessloghandler">
+<span id="books-util-multiprocessloghandler-module"></span><h2>books.util.multiprocessloghandler module<a class="headerlink" href="#module-books.util.multiprocessloghandler" title="永久链接至标题">¶</a></h2>
+<p>多进程版TimedRotatingFileHandler模块</p>
+<dl class="class">
+<dt id="books.util.multiprocessloghandler.MultiprocessHandler">
+<em class="property">class </em><code class="descclassname">books.util.multiprocessloghandler.</code><code class="descname">MultiprocessHandler</code><span class="sig-paren">(</span><em>filename</em>, <em>when='D'</em>, <em>backupCount=0</em>, <em>encoding=None</em>, <em>delay=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/books/util/multiprocessloghandler.html#MultiprocessHandler"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.util.multiprocessloghandler.MultiprocessHandler" title="永久链接至目标">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">logging.FileHandler</span></code></p>
+<p>MultiprocessHandler类 支持多进程的TimedRotatingFileHandler</p>
+<dl class="method">
+<dt id="books.util.multiprocessloghandler.MultiprocessHandler.doChangeFile">
+<code class="descname">doChangeFile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/books/util/multiprocessloghandler.html#MultiprocessHandler.doChangeFile"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.util.multiprocessloghandler.MultiprocessHandler.doChangeFile" title="永久链接至目标">¶</a></dt>
+<dd><p>输出信息到日志文件，并删除多于保留个数的所有日志文件</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="books.util.multiprocessloghandler.MultiprocessHandler.emit">
+<code class="descname">emit</code><span class="sig-paren">(</span><em>record</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/books/util/multiprocessloghandler.html#MultiprocessHandler.emit"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.util.multiprocessloghandler.MultiprocessHandler.emit" title="永久链接至目标">¶</a></dt>
+<dd><p>发送一个日志记录。覆盖FileHandler中的emit方法，logging会自动调用此方法
+:param record 日志记录</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="books.util.multiprocessloghandler.MultiprocessHandler.getFilesToDelete">
+<code class="descname">getFilesToDelete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/books/util/multiprocessloghandler.html#MultiprocessHandler.getFilesToDelete"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.util.multiprocessloghandler.MultiprocessHandler.getFilesToDelete" title="永久链接至目标">¶</a></dt>
+<dd><p>获得过期需要删除的日志文件
+:return 待删除的日志文件</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="books.util.multiprocessloghandler.MultiprocessHandler.shouldChangeFileToWrite">
+<code class="descname">shouldChangeFileToWrite</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/books/util/multiprocessloghandler.html#MultiprocessHandler.shouldChangeFileToWrite"><span class="viewcode-link">[源代码]</span></a><a class="headerlink" href="#books.util.multiprocessloghandler.MultiprocessHandler.shouldChangeFileToWrite" title="永久链接至目标">¶</a></dt>
+<dd><p>更改日志写入目的文件
+:return True 表示已更改，False 表示未更改</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-books.util">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-books.util" title="永久链接至标题">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">內容目录</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">books.util package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-books.util.bookDB">books.util.bookDB module</a></li>
+<li><a class="reference internal" href="#module-books.util.logger">books.util.logger module</a></li>
+<li><a class="reference internal" href="#module-books.util.multiprocessloghandler">books.util.multiprocessloghandler module</a></li>
+<li><a class="reference internal" href="#module-books.util">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">ESBook</a><ul>
+  <li><a href="books.html">books package</a><ul>
+      <li>Previous: <a href="books.html" title="上一章">books package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>本页</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/books.util.rst.txt"
+            rel="nofollow">显示源代码</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>快速搜索</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="转向" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, zhai.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/books.util.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
