@@ -6,6 +6,8 @@
 　　　<br>     1. 爬取小说首页中全部小说url
 　　　<Br>     2. 爬取小说详情内容，章节url
 　　　</br>     3. 爬取章节信息
+   <br>
+   <br>
    </br>爬取的内容存储在mongodb数据库中的 book 数据库中
    <ul>
       <li>urls_table 小说url表单，储存爬取的小说url
@@ -13,3 +15,8 @@
       <li>小说表单，储存爬取的小说详情内容
       <li>chapters_table 章节表单，储存爬取的小说章节内容
    <ur>
+   <br>
+   <br>
+   <span>启动程序</span>
+   <br>
+   <span>ESBook/books/main.py 为项目入口，直接运行mian.py 则启动程序</span>
